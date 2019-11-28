@@ -6,7 +6,30 @@
 
 ---
 
-######            // *************** Usage notes. *************** \\
+### Dependencies.
+
+AsyncBridge and Tangle.Net/Tangle.Net.Mam (which has some dependencies on its own).
+
+---
+#### Things to keep in mind.
+
+* The simplicity of this API is paired, as usual, with a tendency to default parameters under the hood. 
+If you need more configurability, there are some constructor overloads that allow a certain level of control (e.g, choosing the channel mode (public/private/restricted), the timeout and the like). Let your IDE guide you through the options.
+
+* The seeds are randomly generated with Tangle.Net's abstraction, Seed.Random().
+See: https://github.com/Felandil/tangle-.net/blob/develop/Tangle.Net/Tangle.Net/Entity/Seed.cs
+
+* The connection will choose the first valid node in the given collection, if any.
+If it doesn't receive any nodes, it'll throw an exception. However, if it _does_ receive at least one node, but is unable to connect to it/them, it won't throw any exceptions. A sanity check can be made through the CanWrite() method, prior to writting.
+
+* The Connection won't handle exceptions coming from the raw IOTA API. For example, GetFirstMessage() may throw an Exception due to a findTransactions command failure.
+
+* It's worth notting that, since we're working with MAM, we can only make zero-value transactions; i.e., it isn't possible to spend or receive tokens through the Tangle.
+
+
+
+
+####            // *************** Usage notes. *************** \\
 
            IotaMamConnection conn;
 
