@@ -50,7 +50,7 @@ If it doesn't receive any nodes, it'll throw an exception. However, if it _does_
             //Same here, it'll use the second one, since it's the first valid/usable node.
             conn = new IotaMamConnection("SomeInvalidaAddress", "https://nodes.devnet.iota.org:443");
 
-            //There are also a few extra overloads for the constructor, so you can set the type of channel, the timeout and so.
+            //There are also a few extra overloads for the constructor, so you can set the type of channel, the timeout, the seed.
 
             **//Writting.**
             //
@@ -68,6 +68,7 @@ If it doesn't receive any nodes, it'll throw an exception. However, if it _does_
             //
             conn.GetPublishedMessages();
             conn.GetPublishedMessagesAsync();
+            conn.GetPublishedMessages(SomeRoot, SomeChannelKey)
             
             //The next methods are a shorcut, but they retrieve the messages each time they're called,
             //so LINQing the collection
@@ -90,6 +91,9 @@ If it doesn't receive any nodes, it'll throw an exception. However, if it _does_
 
             //Returns the channel key.
             var ChannelKey = conn.ChannelKey
+            
+            //Returns the first message. You can get the root from it, or from conn.Root, which is effectively the same.
+            var FirstMessage = conn.FirstMessage
 
             //Local/Remote/PowSrv. 
             //See: https://medium.com/bytes-io/iota-proof-of-work-remote-vs-local-explained-1cbd89392a79
