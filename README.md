@@ -31,6 +31,8 @@ If it doesn't receive any nodes, it'll throw an exception. However, if it _does_
 
 ####            // *************** Usage notes. *************** \\
 
+// __The only class included in the package is IotaMamConnection.
+
            IotaMamConnection conn;
 
 
