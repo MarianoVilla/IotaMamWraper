@@ -14,7 +14,8 @@
 #### Things to keep in mind.
 
 * The simplicity of this API is paired, as usual, with a tendency to default parameters under the hood. 
-If you need more configurability, there are some constructor overloads that allow a certain level of control (e.g, choosing the channel mode (public/private/restricted), the timeout and the like). Let your IDE guide you through the options.
+If you need more configurability, there are some constructor overloads that allow a certain level of control 
+(e.g, choosing the channel mode (public/private/restricted), the timeout and the like). Let your IDE guide you through the options.
 
 * The seeds are randomly generated with Tangle.Net's abstraction, Seed.Random().
 See: https://github.com/Felandil/tangle-.net/blob/develop/Tangle.Net/Tangle.Net/Entity/Seed.cs
@@ -101,5 +102,6 @@ If it doesn't receive any nodes, it'll throw an exception. However, if it _does_
             //this list may save you some time.
             var InvalidNodes = conn.InvalidNodesReceived;
 
-            //Public/Private/Restricted. See: https://blog.iota.org/introducing-masked-authenticated-messaging-e55c1822d50e
+            //Public/Private/Restricted.
+            //See: https://blog.iota.org/introducing-masked-authenticated-messaging-e55c1822d50e
             var ChannelMode = conn.ChannelMode;
