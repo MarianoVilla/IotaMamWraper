@@ -8,7 +8,7 @@
 
 ### Dependencies.
 
-AsyncBridge and Tangle.Net/Tangle.Net.Mam (which has some dependencies on its own).
+[AsyncBridge](https://github.com/tejacques/AsyncBridge) and Tangle.Net/Tangle.Net.Mam (which has some dependencies on its own).
 
 ---
 #### Things to keep in mind.
