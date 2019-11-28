@@ -29,7 +29,6 @@ namespace IOTAAPI.Lib
         internal MamChannel Channel { get; private set; }
         internal MamChannelSubscription Subscription { get; private set; }
         internal MamChannelSubscriptionFactory SubscriptionFactory { get; private set; }
-        internal MaskedAuthenticatedMessage FirstMessage { get; private set; }
         internal MamChannelFactory ChannelFactory { get; private set; }
         private IIotaRepository Factory;
         #endregion
@@ -57,7 +56,9 @@ namespace IOTAAPI.Lib
 
         public string ChannelKey { get; private set; }
 
-        public string Root { get; set; }
+        public MaskedAuthenticatedMessage FirstMessage { get; private set; }
+
+        public string Root { get { return FirstMessage.Root.Value; } }
 
         //If you wish to cache the invalid nodes to prevent reattempts and improve efficiency, this list may save you some time.
         public List<string> InvalidNodesReceived { get; private set; } = new List<string>();
@@ -77,8 +78,8 @@ namespace IOTAAPI.Lib
         {
             if (InvalidNodes(Nodes))
                 throw new ArgumentException("No nodes received!");
-            SetUp(Nodes);
             this.Timeout = Timeout;
+            SetUp(Nodes);
         }
         public IotaMamConnection(int Timeout, IEnumerable<string> Nodes) : this(Timeout, Nodes.ToArray()) { }
 
@@ -163,7 +164,7 @@ namespace IOTAAPI.Lib
         }
         private List<UnmaskedAuthenticatedMessage> GetMessages(string Root, string ChannelKey)
         {
-            var channelSubscription = this.SubscriptionFactory.Create(new Hash(Root), Mode.Restricted, ChannelKey);
+            var channelSubscription = this.SubscriptionFactory.Create(new Hash(Root), ChannelMode, ChannelKey);
             var publishedMessages = new List<UnmaskedAuthenticatedMessage>();
             using (var A = AsyncHelper.Wait)
             {
@@ -180,7 +181,6 @@ namespace IOTAAPI.Lib
             if (FirstMessage == null)
                 CreateSubscription(message);
             await Channel.PublishAsync(message);
-            this.Root = message.Root.Value;
         }
         public void Write(string Message)
         {
@@ -191,7 +191,6 @@ namespace IOTAAPI.Lib
             }
             if (FirstMessage == null)
                 CreateSubscription(message);
-            this.Root = message.Root.Value;
         }
         public string WriteAndGetState(string Message)
         {
@@ -202,7 +201,6 @@ namespace IOTAAPI.Lib
             }
             if (FirstMessage == null)
                 CreateSubscription(message);
-            this.Root = message.Root.Value;
             return JsonConvert.SerializeObject(Channel);
         }
         public async Task<string> WriteAndGetStateAsync(string Message)
@@ -211,7 +209,6 @@ namespace IOTAAPI.Lib
             await Channel.PublishAsync(message);
             if (FirstMessage == null)
                 CreateSubscription(message);
-            this.Root = message.Root.Value;
             return JsonConvert.SerializeObject(Channel);
         }
         #endregion

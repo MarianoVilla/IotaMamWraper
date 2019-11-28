@@ -64,5 +64,16 @@ namespace IOTAAPI.Test.SynchronousAPITests
             var Thrown = Assert.Throws<AggregateException>(() => conn.Write("SomeMessage"));
             Assert.True(Thrown.InnerException is WebException);
         }
+        [Test]
+        public void TestRootShouldNotChange()
+        {
+            IotaMamConnection conn = new IotaMamConnection(TestRepo.DevnetNode);
+
+            Assert.True(conn.IsConnected);
+
+            conn.Write("SomeMessage");
+
+            Assert.AreEqual(conn.Root, conn.FirstMessage.Root.Value);
+        }
     }
 }

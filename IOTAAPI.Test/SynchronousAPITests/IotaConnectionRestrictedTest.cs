@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tangle.Net.Entity;
 using Tangle.Net.Mam.Entity;
 
 namespace IOTAAPI.Test.SynchronousAPITests
@@ -71,9 +72,13 @@ namespace IOTAAPI.Test.SynchronousAPITests
         [Test]
         public void TestRestrictedGetPublishedMessagesFromRootAndKey()
         {
-            IotaMamConnection conn = new IotaMamConnection(Mode.Restricted, TestRepo.DevnetNode);
+            string[] Nodes = { "https://chaingreat.intek.ai:14267", "https://chain.intek.ai:14267" };
 
-            conn.Write("SomeMessage");
+            var YourSeed = new Seed("NIHTSVL9NTGWXEHVRPLYCAYRORZ9VDELMGRNEQGDB9UZFCOTIZDUDZGGKR9UO9FRZALJHFXWJARXXFDVB");
+
+            IotaMamConnection conn = new IotaMamConnection(YourSeed, Nodes);
+
+            conn.WriteAndGetState("SomeMessage");
 
             var Messages = conn.GetPublishedMessages(conn.Root, conn.ChannelKey);
 
