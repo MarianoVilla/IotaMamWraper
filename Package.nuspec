@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>IOTA.API</id>
+    <version>1.0.1</version>
+    <authors>Mariano Luis Villa</authors>
+    <owners>Mariano Luis Villa</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This is a simple interface to work around Tangle.Net.Mam's implementation over the native IOTA API.</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <dependencies>
+      <dependency id="Tangle.Net" version="3.1.1" />
+	  <dependency id="Tangle.Net.Mam" version="2.1.0" />
+	  <dependency id="AsyncBridge" version="0.3.1" />
+    </dependencies>
+  </metadata>
+  
+  <files>
+     <file src="IOTAAPI.Lib\IotaMamConnection.cs" target="content/IotaConnection/IotaMamConnection.cs"/>
+	 <file src="packages\AsynchronousBridge.1.2.2\lib\Net45\AsyncBridge.dll" target="lib\Net45"/>
+  </files>
+  
+</package>

@@ -42,7 +42,7 @@ namespace IOTAAPI.Lib
         //The Channel mode: Public/Private/Restricted.
         public Mode ChannelMode { get; set; } = Mode.Public;
 
-        public int Timeout { get; private set; } = 30000;
+        public int Timeout { get; private set; } = int.MaxValue;
 
         //The type of Proof of Work: Local/Remote/PowSrv. See: https://medium.com/bytes-io/iota-proof-of-work-remote-vs-local-explained-1cbd89392a79
         public PoWType PoW { get; private set; } = PoWType.Remote;
@@ -53,9 +53,11 @@ namespace IOTAAPI.Lib
         //Returns the URI of the node that's connected.
         public string ConnectedNode { get; private set; }
 
-        public Seed ConnectionSeed { get; set; }
+        public Seed ConnectionSeed { get; private set; }
 
-        public string ChannelKey { get; set; }
+        public string ChannelKey { get; private set; }
+
+        public string Root { get; set; }
 
         //If you wish to cache the invalid nodes to prevent reattempts and improve efficiency, this list may save you some time.
         public List<string> InvalidNodesReceived { get; private set; } = new List<string>();
@@ -73,25 +75,39 @@ namespace IOTAAPI.Lib
 
         public IotaMamConnection(int Timeout, params string[] Nodes)
         {
-            if (Nodes == null || !Nodes.Any())
+            if (InvalidNodes(Nodes))
                 throw new ArgumentException("No nodes received!");
-            this.Timeout = Timeout;
             SetUp(Nodes);
+            this.Timeout = Timeout;
         }
         public IotaMamConnection(int Timeout, IEnumerable<string> Nodes) : this(Timeout, Nodes.ToArray()) { }
 
         public IotaMamConnection(Mode mode, params string[] Nodes)
         {
-            if (Nodes == null || !Nodes.Any())
+            if (InvalidNodes(Nodes))
                 throw new ArgumentException("No nodes received!");
             this.ChannelMode = mode;
             SetUp(Nodes);
         }
         public IotaMamConnection(Mode mode, IEnumerable<string> Nodes) : this(mode, Nodes.ToArray()) { }
+
+        public IotaMamConnection(Seed Seed, params string[] Nodes)
+        {
+            if (InvalidNodes(Nodes))
+                throw new ArgumentException("No nodes received!");
+            this.ConnectionSeed = Seed;
+            SetUp(Nodes);
+        }
+        public IotaMamConnection(Seed Seed, IEnumerable<string> Nodes) : this(Seed, Nodes.ToArray()) { }
         #endregion
+
 
         #region Private work.
         private bool InvalidNodes(params string[] Nodes)
+        {
+            return Nodes == null || !Nodes.Any() || Nodes.All(n => string.IsNullOrWhiteSpace(n));
+        }
+        private bool InvalidNodes(IEnumerable<string> Nodes)
         {
             return Nodes == null || !Nodes.Any() || Nodes.All(n => string.IsNullOrWhiteSpace(n));
         }
@@ -122,7 +138,8 @@ namespace IOTAAPI.Lib
         }
         private void SetInnerProps(string Node)
         {
-            this.ConnectionSeed = Seed.Random();
+            //If the connection seed is NULL, it means we got here from a seedless constructor, so we should generate it.
+            this.ConnectionSeed = this.ConnectionSeed ?? Seed.Random();
             this.ChannelKey = Seed.Random().Value;
             this.ChannelFactory = new MamChannelFactory(CurlMamFactory.Default, CurlMerkleTreeFactory.Default, Factory);
             this.SubscriptionFactory = new MamChannelSubscriptionFactory(Factory, CurlMamParser.Default, CurlMask.Default);
@@ -144,6 +161,16 @@ namespace IOTAAPI.Lib
             }
             return publishedMessages;
         }
+        private List<UnmaskedAuthenticatedMessage> GetMessages(string Root, string ChannelKey)
+        {
+            var channelSubscription = this.SubscriptionFactory.Create(new Hash(Root), Mode.Restricted, ChannelKey);
+            var publishedMessages = new List<UnmaskedAuthenticatedMessage>();
+            using (var A = AsyncHelper.Wait)
+            {
+                A.Run(channelSubscription.FetchAsync(), res => publishedMessages = res);
+            }
+            return publishedMessages;
+        }
         #endregion
 
         #region Write.
@@ -153,6 +180,7 @@ namespace IOTAAPI.Lib
             if (FirstMessage == null)
                 CreateSubscription(message);
             await Channel.PublishAsync(message);
+            this.Root = message.Root.Value;
         }
         public void Write(string Message)
         {
@@ -163,6 +191,7 @@ namespace IOTAAPI.Lib
             }
             if (FirstMessage == null)
                 CreateSubscription(message);
+            this.Root = message.Root.Value;
         }
         public string WriteAndGetState(string Message)
         {
@@ -173,6 +202,7 @@ namespace IOTAAPI.Lib
             }
             if (FirstMessage == null)
                 CreateSubscription(message);
+            this.Root = message.Root.Value;
             return JsonConvert.SerializeObject(Channel);
         }
         public async Task<string> WriteAndGetStateAsync(string Message)
@@ -181,6 +211,7 @@ namespace IOTAAPI.Lib
             await Channel.PublishAsync(message);
             if (FirstMessage == null)
                 CreateSubscription(message);
+            this.Root = message.Root.Value;
             return JsonConvert.SerializeObject(Channel);
         }
         #endregion
@@ -194,6 +225,11 @@ namespace IOTAAPI.Lib
         public List<string> GetPublishedMessages()
         {
             var publishedMessages = GetMessages();
+            return publishedMessages.Select(x => x.Message.ToUtf8String()).ToList();
+        }
+        public List<string> GetPublishedMessages(string Root, string ChannelKey)
+        {
+            var publishedMessages = GetMessages(Root, ChannelKey);
             return publishedMessages.Select(x => x.Message.ToUtf8String()).ToList();
         }
         #endregion

@@ -68,5 +68,17 @@ namespace IOTAAPI.Test.SynchronousAPITests
 
             Assert.True(Message == "SomeMessage");
         }
+        [Test]
+        public void TestRestrictedGetPublishedMessagesFromRootAndKey()
+        {
+            IotaMamConnection conn = new IotaMamConnection(Mode.Restricted, TestRepo.DevnetNode);
+
+            conn.Write("SomeMessage");
+
+            var Messages = conn.GetPublishedMessages(conn.Root, conn.ChannelKey);
+
+            Assert.True(Messages.Count == 1);
+            Assert.True(Messages[0] == "SomeMessage");
+        }
     }
 }

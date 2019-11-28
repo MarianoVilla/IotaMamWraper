@@ -36,12 +36,21 @@ namespace IOTAAPI.Test.SynchronousAPITests
             Assert.True(conn.InvalidNodesReceived.Contains("SomeInvalidNode"));
         }
         [Test]
+        public void TestCreateWithSeedAndNode()
+        {
+            IotaMamConnection conn = new IotaMamConnection(TestRepo.Seed, TestRepo.DevnetNode);
+
+            Assert.True(conn.IsConnected);
+            Assert.AreEqual(conn.ConnectionSeed.Value, TestRepo.Seed.Value);
+
+        }
+        [Test]
         public void TestCreateWithoutNodes_ShouldThrow()
         {
             Assert.Throws<ArgumentException>(() => new IotaMamConnection());
-            Assert.Throws<ArgumentException>(() => new IotaMamConnection(null));
             Assert.Throws<ArgumentException>(() => new IotaMamConnection(""));
         }
+
         [Test]
         public void TestCantWriteWithoutNode()
         {
